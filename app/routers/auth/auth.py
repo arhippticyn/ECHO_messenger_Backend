@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import SECRET_KEY, ALGORITM
 from app.models.user.user import User
 from app.schemas.auth.auth import RegisterUser, LoginUser, UserResponse
-from app.services.token import encode_token, verify_token
+from app.services.token import encode_token, get_current_user
 from app.services.cookies import set_cookie
 from app.db.session import get_db
 from passlib.context import CryptContext
