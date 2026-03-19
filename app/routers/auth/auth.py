@@ -39,7 +39,7 @@ async def register(user: RegisterUser,res: Response, db: AsyncSession = Depends(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='User already register')
 
    
-    user_db = User(username=user.username, email=user.email, password=hash_password(user.password), provider='local', provider_id=user.username)
+    user_db = User(username=user.username, email=user.email, password=hash_password(user.password), provider='local', provider_id=user.username, is_online=True)
     db.add(user_db)
     await db.commit()
     await db.refresh(user_db)
@@ -101,7 +101,7 @@ async def google_callback(request: Request,res: Response, db: AsyncSession = Dep
     user = ( await db.execute(select(User).where(User.provider == provider, User.provider_id == provider_id))).scalars().first()
 
     if not user:
-        user = User(username=username, email=email, password=None, provider=provider, provider_id=provider_id)
+        user = User(username=username, email=email, password=None, provider=provider, provider_id=provider_id, is_online=True)
         db.add(user)
         await db.commit()
         await db.refresh(user)
