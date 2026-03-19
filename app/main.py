@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+import app.db.models
 from fastapi.middleware.cors import CORSMiddleware
 from .routers.router import router
 from starlette.middleware.sessions import SessionMiddleware

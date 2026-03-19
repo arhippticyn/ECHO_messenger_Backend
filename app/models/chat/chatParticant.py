@@ -1,8 +1,6 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from .chat import Chat
 from sqlalchemy import Enum, ForeignKey, DateTime
 from sqlalchemy.sql import func
-from ..user.user import User
 from ...db.base import Base
 import enum
 

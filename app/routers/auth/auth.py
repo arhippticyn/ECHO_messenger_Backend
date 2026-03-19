@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Response, status, Request
 from sqlalchemy import select
+import app.models
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import SECRET_KEY, ALGORITM, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
 from app.models.user.user import User
