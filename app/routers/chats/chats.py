@@ -51,4 +51,51 @@ async def get_all_chats(user: User = Depends(get_current_user), db: AsyncSession
 
 @router.get('/{chat_id}')
 async def get_chat(chat_id: int, db: AsyncSession = Depends(get_db)):
-    return (await db.execute(select(Chat).join(ChatParticipant).where(ChatParticipant.chat_id == chat_id))).scalars().first()
+    return (await db.execute(select(Chat).where(Chat.id == chat_id))).scalars().first()
+
+@router.delete('/{chat_id}')
+async def delete_chat(chat_id: int, db: AsyncSession = Depends(get_db)):
+    chat = ( await db.execute(select(Chat).join(ChatParticipant).where(ChatParticipant.chat_id == chat_id))).scalars().first()
+
+    if not chat:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Chats is not found')
+
+    await db.delete(chat)
+    await db.commit()
+
+    return {'message': 'Success'}
+
+@router.post('/{chat_id}/participants')
+async def add_participant_to_chat(chat_id: int,user_id: int, db: AsyncSession = Depends(get_db)):
+    existing = (await db.execute(
+        select(ChatParticipant).where(
+            ChatParticipant.chat_id == chat_id,
+            ChatParticipant.user_id == user_id
+        )
+    )).scalars().first()
+
+    if existing:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail='User already in chat')
+    
+
+    particpant = ChatParticipant(chat_id=chat_id, user_id=user_id, role=ChatParticipantType.base)
+
+    db.add(particpant)
+    await db.commit()
+    await db.refresh(particpant)
+
+    return particpant
+
+@router.delete('/{chat_id}/participants/{user_id}')
+async def delete_parcitipant(chat_id: int, user_id: int, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    parcitipant = ( await db.execute(select(ChatParticipant).where(ChatParticipant.chat_id == chat_id, ChatParticipant.user_id == user_id))).scalars().first()
+
+    admin = ( await db.execute(select(ChatParticipant).where(ChatParticipant.chat_id == chat_id, ChatParticipant.role == ChatParticipantType.admin))).scalars().first()
+
+    if not admin or user.id != admin.user_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Only admin can remove participants')
+
+    await db.delete(parcitipant)
+    await db.commit()
+
+    return {'message': 'Success'}
