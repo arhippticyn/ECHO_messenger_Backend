@@ -3,7 +3,9 @@ from ...db.session import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from ...models.message.message import Message, MessageType
+from ...models.user.user import User
 from ...services.connection_manager import manager
+from ...services.token import get_current_user
 from datetime import datetime
 import os
 import shutil
@@ -51,4 +53,15 @@ async def websocket_endpoint(websocket: WebSocket, chat_id: int, db: AsyncSessio
         manager.disconnect(chat_id, websocket)
 
 
+@router.patch('/{chat_id}/message/{id}')
+async def remake_message(chat_id: int, id: int, new_content: str, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    message = (await db.execute(select(Message).where(Message.chat_id == chat_id, Message.id == id, Message.sender_id == user.id))).scalars().first()
 
+    if not message:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Message not found')
+
+    message.content = new_content
+    await db.commit()
+    await db.refresh(message)
+
+    return message
