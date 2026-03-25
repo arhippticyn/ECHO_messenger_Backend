@@ -19,8 +19,15 @@ class ConnectionMessage:
 
     async def broadcast(self, chat_id, message: dict):
         connections = self.active_connections.get(chat_id, [])
+        dead_connections = []
         for connection in connections:
-            await connection.send_json(message)
+            try:
+                await connection.send_json(message)
+            except Exception:
+                dead_connections.append(connection)
+        
+        for dead in dead_connections:
+            connections.remove(dead)
 
 
 manager = ConnectionMessage()
