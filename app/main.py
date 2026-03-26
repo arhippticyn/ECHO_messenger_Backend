@@ -11,7 +11,6 @@ origins = [
     FRONTEND_URL
 ]
 
-app.include_router(router=router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -25,6 +24,8 @@ app.add_middleware(
     SessionMiddleware,
     secret_key=SECRET_KEY
 )
+
+app.include_router(router=router)
 
 
 @app.get('/')
