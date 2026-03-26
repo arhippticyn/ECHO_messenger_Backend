@@ -8,7 +8,7 @@ from .core.config import SECRET_KEY, FRONTEND_URL
 app = FastAPI()
 
 origins = [
-    FRONTEND_URL
+    "http://localhost:5173"
 ]
 
 
