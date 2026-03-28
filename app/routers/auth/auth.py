@@ -91,7 +91,7 @@ async def google_login(request: Request):
     if DEBUG:
         redirect_uri = 'http://127.0.0.1:8024/auth/google/callback'
     else:
-        redirect_uri = 'https://echo-bj2n.onrender.com'
+        redirect_uri = 'https://echo-bj2n.onrender.com/auth/google/callback'
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
 @router.get('/google/callback', response_model=UserResponse)
@@ -109,8 +109,6 @@ async def google_callback(request: Request,res: Response, db: AsyncSession = Dep
     if user_local_provider:
         if DEBUG:
             return RedirectResponse(url=FRONTEND_URL)
-        else:
-            return RedirectResponse(url='')
 
     user = ( await db.execute(select(User).where(User.provider == provider, User.provider_id == provider_id))).scalars().first()
 
@@ -129,8 +127,8 @@ async def google_callback(request: Request,res: Response, db: AsyncSession = Dep
     access_token = encode_token(payload=payload, SECRET_KEY=SECRET_KEY, algoritm=ALGORITM, type='access', exp=10)
     refresh_token = encode_token(payload=payload, SECRET_KEY=SECRET_KEY, algoritm=ALGORITM, type='refresh', exp=1440)
 
-    if DEBUG:
-        redirect = RedirectResponse(url=f'{FRONTEND_URL}/home')
+    # if DEBUG:
+    redirect = RedirectResponse(url=f'{FRONTEND_URL}/home')
     # else:
     #     redirect = RedirectResponse(url=f'{FRONTEND_URL_DEPLOY}/home')
 
