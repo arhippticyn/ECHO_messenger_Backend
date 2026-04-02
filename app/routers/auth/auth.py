@@ -156,6 +156,10 @@ async def get_access_token(request: Request, res: Response):
 
     return {'message': 'Success'}
 
+@router.get('/access')
+async def get_token(request: Request):
+    return request.cookies.get('access')
+
 
 @router.delete('/logout')
 async def log_out(res: Response):
