@@ -128,7 +128,7 @@ async def google_callback(request: Request,res: Response, db: AsyncSession = Dep
     refresh_token = encode_token(payload=payload, SECRET_KEY=SECRET_KEY, algoritm=ALGORITM, type='refresh', exp=1440)
 
     # if DEBUG:
-    redirect = RedirectResponse(url=f'{FRONTEND_URL}')
+    redirect = RedirectResponse(url=f'{FRONTEND_URL}/home')
     # else:
     #     redirect = RedirectResponse(url=f'{FRONTEND_URL_DEPLOY}/home')
 
