@@ -55,7 +55,12 @@ async def get_all_chats(user: User = Depends(get_current_user), db: AsyncSession
 
     for chat in chats:
         participants_list = [
-            {"id": p.id, "username": p.username, "is_online": p.is_online} 
+            {
+                "id": p.id, 
+                "username": p.username, 
+                "is_online": p.is_online,
+                "email": p.email  
+            }
             for p in chat.participants
         ]
 
