@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from ...models.chat.chat import Chat, ChatType
 from ...models.chat.chatParticant import ChatParticipant, ChatParticipantType
 from ...models.user.user import User
@@ -45,9 +46,25 @@ async def create_private_chat(chat: ChatCreatePrivate, user: User = Depends(get_
 
 @router.get('')
 async def get_all_chats(user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    chats = (await db.execute(select(Chat).join(ChatParticipant, ChatParticipant.chat_id == Chat.id).where(ChatParticipant.user_id == user.id))).scalars().all()
+    chats = ( await db.execute(select(Chat).join(ChatParticipant).where(ChatParticipant.user_id == user.id).options(selectinload(Chat.participants)))).scalars().all()
 
-    return chats
+    response_data = []
+
+    for chat in chats:
+        chat_info = {
+            "id": chat.id,
+            "type": chat.type,
+            "title": chat.title,
+            "participants": [{"id": p.id, "username": p.username, "is_online": p.is_online} for p in chat.participants]
+        }
+
+        if chat.type == 'private':
+            interlocutor = next((p for p in chat.participants if p.id != user.id), None)
+            chat_info["interlocutor_name"] = interlocutor.username if interlocutor else "Unknown"
+
+        response_data.append(chat_info)
+
+    return response_data
 
 @router.get('/{chat_id}')
 async def get_chat(chat_id: int, db: AsyncSession = Depends(get_db)):
