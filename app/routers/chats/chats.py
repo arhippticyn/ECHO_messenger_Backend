@@ -6,7 +6,7 @@ from ...models.chat.chat import Chat, ChatType
 from ...models.chat.chatParticant import ChatParticipant, ChatParticipantType
 from ...models.user.user import User
 from ...db.session import get_db
-from ...schemas.chats.chats import ChatCreateGroup, ChatCreatePrivate
+from ...schemas.chats.chats import ChatCreateGroup, ChatCreatePrivate, ChatResponse
 from ...services.token import get_current_user
 from typing import List
 
@@ -44,25 +44,37 @@ async def create_private_chat(chat: ChatCreatePrivate, user: User = Depends(get_
 
     return chat_db
 
-@router.get('')
+@router.get('', response_model=List[ChatResponse])
 async def get_all_chats(user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    chats = ( await db.execute(select(Chat).join(ChatParticipant).where(ChatParticipant.user_id == user.id).options(selectinload(Chat.participants)))).scalars().all()
+    chats = ( await db.execute(select(Chat)
+        .join(ChatParticipant)
+        .where(ChatParticipant.user_id == user.id)
+        .options(selectinload(Chat.participants)))).scalars().all()
 
     response_data = []
 
     for chat in chats:
-        chat_info = {
+        participants_list = [
+            {"id": p.id, "username": p.username, "is_online": p.is_online} 
+            for p in chat.participants
+        ]
+
+        chat_dict = {
             "id": chat.id,
             "type": chat.type,
             "title": chat.title,
-            "participants": [{"id": p.id, "username": p.username, "is_online": p.is_online} for p in chat.participants]
+            "participants": participants_list,
+            "interlocutor_name": None # По умолчанию
         }
 
-        if chat.type == 'private':
+        if chat.type == ChatType.private: 
             interlocutor = next((p for p in chat.participants if p.id != user.id), None)
-            chat_info["interlocutor_name"] = interlocutor.username if interlocutor else "Unknown"
+            if interlocutor:
+                chat_dict["interlocutor_name"] = interlocutor.username
+            else:
+                chat_dict["interlocutor_name"] = "Saved Messages (You)"
 
-        response_data.append(chat_info)
+        response_data.append(chat_dict)
 
     return response_data
 
