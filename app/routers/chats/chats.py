@@ -103,7 +103,7 @@ async def delete_chat(chat_id: int, db: AsyncSession = Depends(get_db)):
 
     return {'message': 'Success'}
 
-@router.post('/{chat_id}/participants')
+@router.post('/{chat_id}/participants/{user_id}')
 async def add_participant_to_chat(chat_id: int,user_id: int, db: AsyncSession = Depends(get_db)):
     existing = (await db.execute(
         select(ChatParticipant).where(
