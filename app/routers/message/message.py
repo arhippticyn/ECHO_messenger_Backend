@@ -25,7 +25,7 @@ async def upload_file(chat_id: int, file: UploadFile = File(...)):
     file_path = f'{folder}/{file.filename}'
 
     with open(file_path, 'wb') as f:
-        shutil.copyfileobj(file.file, f)
+        shutil.copyfileobj(file.file, f)    
 
     return {'file_url': file_path}
 
@@ -77,7 +77,7 @@ async def delete_message(chat_id: int, id: int, user: User = Depends(get_current
     await db.delete(message)
     await db.commit()
 
-    return {'message': 'Success'}
+    return id
 
 @router.post('/{chat_id}/{message_id}/{type}')
 async def status_messages(chat_id: int, message_id: int, type: MessageStatusType, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
