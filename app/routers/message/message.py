@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, WebSocket, WebSocketDisconnect, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, status, WebSocket, WebSocketDisconnect, UploadFile, File, Body
 from ...db.session import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -55,7 +55,7 @@ async def websocket_endpoint(websocket: WebSocket, chat_id: int, db: AsyncSessio
 
 
 @router.patch('/{chat_id}/message/{id}')
-async def remake_message(chat_id: int, id: int, new_content: str, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+async def remake_message(chat_id: int, id: int, new_content: str = Body(..., embed=True), user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     message = (await db.execute(select(Message).where(Message.chat_id == chat_id, Message.id == id, Message.sender_id == user.id))).scalars().first()
 
     if not message:
