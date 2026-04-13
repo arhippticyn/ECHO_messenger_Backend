@@ -77,7 +77,7 @@ async def delete_message(chat_id: int, id: int, user: User = Depends(get_current
     await db.delete(message)
     await db.commit()
 
-    return id
+    return {'id': id}
 
 @router.post('/{chat_id}/{message_id}/{type}')
 async def status_messages(chat_id: int, message_id: int, type: MessageStatusType, user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
