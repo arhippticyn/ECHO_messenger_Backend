@@ -17,6 +17,7 @@ router = APIRouter()
 async def get_messages(chat_id: int, db: AsyncSession = Depends(get_db)):
     return ( await db.execute(select(Message).where(Message.chat_id == chat_id))).scalars().all()
 
+@router.post('/{chat_id}/upload')
 async def upload_file(
     chat_id: int, 
     file: UploadFile = File(...), 
