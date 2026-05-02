@@ -131,7 +131,7 @@ async def status_messages(chat_id: int, message_id: int, type: MessageStatusType
             message_id=message_id,
             user_id=user.id,
             status=type,
-            updated_at=datetime.now(timezone.utc)
+            updated_at=datetime.utcnow()
         )
         db.add(mes_status)
 
